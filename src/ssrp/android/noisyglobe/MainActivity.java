@@ -4,9 +4,6 @@ import java.io.IOException;
 
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
-import android.content.Context;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,15 +12,14 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
 
-	private MediaRecorder mRecorder = null;
-	private double amp_ref = 0.6;
-	private TextView txtSoundLevel;
-	private TextView txtLongitude;
-	private TextView txtLatitude;
-	private int mInterval = 2000;
-	private Handler mHandler;
-	LocationManager locationManager;
-	LocationListener locationListener;
+	protected MediaRecorder mRecorder = null;
+	protected double amp_ref = 0.6;
+	protected TextView txtSoundLevel;
+	protected TextView txtLongitude;
+	protected TextView txtLatitude;
+	protected int mInterval = 2000;
+	protected Handler mHandler;
+	protected GPSTracker gpsTracker;
 
 	protected Double longitude;
 	protected Double latitude;
@@ -31,8 +27,10 @@ public class MainActivity extends ActionBarActivity {
 	Runnable mStatusChecker = new Runnable() {
 		@Override
 		public void run() {
-			longitude = ((MyLocationListener) locationListener).getLongitude();
-			latitude = ((MyLocationListener) locationListener).getLatitude();
+			if (gpsTracker.canGetLocation) {
+				longitude = gpsTracker.getLongitude();
+				latitude = gpsTracker.getLatitude();
+			}
 			updateUiValues();
 			mHandler.postDelayed(this, mInterval);
 		}
@@ -97,10 +95,7 @@ public class MainActivity extends ActionBarActivity {
 		txtLongitude = (TextView) findViewById(R.id.txtLongitude);
 		txtLatitude = (TextView) findViewById(R.id.txtLatitude);
 		mHandler = new Handler();
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationListener = new MyLocationListener(getApplicationContext());
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
-				0, locationListener);
+		gpsTracker = new GPSTracker(this);
 
 		try {
 			startUpdatingUiTask();
