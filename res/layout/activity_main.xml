@@ -9,8 +9,65 @@
     tools:context="ssrp.android.noisyglobe.MainActivity" >
 
     <TextView
+        android:id="@+id/txtLabelSoundLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="49dp"
+        android:layout_marginTop="74dp"
+        android:text="@string/sound_level"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/txtSoundLevel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/txtLabelSoundLevel"
+        android:layout_alignBottom="@+id/txtLabelSoundLevel"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@+id/txtLabelSoundLevel"
+        android:text="@string/no_text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/txtLabelLongitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/txtLabelSoundLevel"
+        android:layout_below="@+id/txtSoundLevel"
+        android:layout_marginTop="16dp"
+        android:text="@string/longitude"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/txtLongitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/txtLabelLongitude"
+        android:layout_alignBottom="@+id/txtLabelLongitude"
+        android:layout_alignLeft="@+id/txtSoundLevel"
+        android:text="@string/no_text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/txtLabelLatitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/txtLabelLongitude"
+        android:layout_below="@+id/txtLabelLongitude"
+        android:layout_marginTop="20dp"
+        android:text="@string/latitude"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/txtLatitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/txtLabelLatitude"
+        android:layout_alignBottom="@+id/txtLabelLatitude"
+        android:layout_alignLeft="@+id/txtLongitude"
+        android:text="@string/no_text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>

@@ -1,17 +1,134 @@
 package ssrp.android.noisyglobe;
 
+import java.io.IOException;
+
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
+import android.content.Context;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
+
+	private MediaRecorder mRecorder = null;
+	private double amp_ref = 0.6;
+	private TextView txtSoundLevel;
+	private TextView txtLongitude;
+	private TextView txtLatitude;
+	private int mInterval = 2000;
+	private Handler mHandler;
+	LocationManager locationManager;
+	LocationListener locationListener;
+
+	protected Double longitude;
+	protected Double latitude;
+
+	Runnable mStatusChecker = new Runnable() {
+		@Override
+		public void run() {
+			longitude = ((MyLocationListener) locationListener).getLongitude();
+			latitude = ((MyLocationListener) locationListener).getLatitude();
+			updateUiValues();
+			mHandler.postDelayed(this, mInterval);
+		}
+	};
+
+	private void startUpdatingUiTask() throws IllegalStateException,
+			IOException {
+		start();
+		mStatusChecker.run();
+	}
+
+	private void stopUpdatingUiTask() {
+		stop();
+		mHandler.removeCallbacks(mStatusChecker);
+	}
+
+	private void start() throws IllegalStateException, IOException {
+		if (mRecorder == null) {
+			mRecorder = new MediaRecorder();
+			mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+			mRecorder.setOutputFile("/dev/null");
+			mRecorder.prepare();
+			mRecorder.start();
+		}
+	}
+
+	private void stop() {
+		if (mRecorder != null) {
+			mRecorder.stop();
+			mRecorder.release();
+			mRecorder = null;
+		}
+	}
+
+	private double getAmplitude() {
+		double power_db = 0;
+		if (mRecorder != null) {
+			power_db = 20 * Math.log10(mRecorder.getMaxAmplitude() / amp_ref);
+			power_db = (double) Math.round(power_db * 100.0) / 100.0;
+		}
+		return power_db;
+
+	}
+
+	private void updateUiValues() {
+		txtSoundLevel.setText(Double.toString(getAmplitude()));
+		if (longitude != null) {
+			txtLongitude.setText(Double.toString(longitude));
+		}
+		if (latitude != null) {
+			txtLatitude.setText(Double.toString(latitude));
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		txtSoundLevel = (TextView) findViewById(R.id.txtSoundLevel);
+		txtLongitude = (TextView) findViewById(R.id.txtLongitude);
+		txtLatitude = (TextView) findViewById(R.id.txtLatitude);
+		mHandler = new Handler();
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationListener = new MyLocationListener(getApplicationContext());
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
+				0, locationListener);
+
+		try {
+			startUpdatingUiTask();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		try {
+			startUpdatingUiTask();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	};
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		stopUpdatingUiTask();
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

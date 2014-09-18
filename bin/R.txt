@@ -246,7 +246,7 @@ int id action_context_bar 0x7f05001d
 int id action_menu_divider 0x7f050016
 int id action_menu_presenter 0x7f050017
 int id action_mode_close_button 0x7f050024
-int id action_settings 0x7f05003c
+int id action_settings 0x7f050042
 int id activity_chooser_view_content 0x7f050025
 int id always 0x7f05000b
 int id beginning 0x7f050011
@@ -293,6 +293,12 @@ int id submit_area 0x7f050039
 int id tabMode 0x7f050002
 int id title 0x7f05002b
 int id top_action_bar 0x7f050020
+int id txtLabelLatitude 0x7f050040
+int id txtLabelLongitude 0x7f05003e
+int id txtLabelSoundLevel 0x7f05003c
+int id txtLatitude 0x7f050041
+int id txtLongitude 0x7f05003f
+int id txtSoundLevel 0x7f05003d
 int id up 0x7f050021
 int id useLogo 0x7f050003
 int id withText 0x7f05000c
@@ -340,6 +346,10 @@ int string abc_shareactionprovider_share_with_application 0x7f0a000b
 int string action_settings 0x7f0a000f
 int string app_name 0x7f0a000d
 int string hello_world 0x7f0a000e
+int string latitude 0x7f0a0012
+int string longitude 0x7f0a0011
+int string no_text 0x7f0a0013
+int string sound_level 0x7f0a0010
 int style AppBaseTheme 0x7f0b008b
 int style AppTheme 0x7f0b008c
 int style TextAppearance_AppCompat_Base_CompactMenu_Dialog 0x7f0b0063
