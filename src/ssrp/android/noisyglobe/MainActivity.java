@@ -17,7 +17,7 @@ public class MainActivity extends ActionBarActivity {
 	protected TextView txtSoundLevel;
 	protected TextView txtLongitude;
 	protected TextView txtLatitude;
-	protected int mInterval = 2000;
+	protected int mInterval = 1000;
 	protected Handler mHandler;
 	protected GPSTracker gpsTracker;
 
