@@ -8,13 +8,18 @@ import android.view.MenuItem;
 public class MainActivity extends ActionBarActivity {
 
 	SoundLevelMeter slm;
+	DataUploader dataUploader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 		slm = new SoundLevelMeter(this);
 		slm.measureSoundLevel();
+		
+		dataUploader = new DataUploader(this);
+		dataUploader.uploadSoundValues();
 	}
 
 	@Override
