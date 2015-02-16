@@ -82,18 +82,28 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 		return null;
 	}
 
-	public void updateNoiseEntry(NoiseObject obj) {
+	public void deleteEntityFromLocalStorage(NoiseObject obj) {
 		try {
-			String query = "UPDATE " + NoiseEntry.TABLE_NAME
-					+ " SET `is_uploaded` = 1 WHERE `"
+			String query = "DELETE FROM " + NoiseEntry.TABLE_NAME + " WHERE `"
 					+ NoiseEntry.COLUMN_NAME_SOUND_LEVEL + "` = "
 					+ obj.getSoundLevel() + " AND `"
 					+ NoiseEntry.COLUMN_NAME_LONGITUDE + "` = "
 					+ obj.getLongitude() + " AND `"
-					+ NoiseEntry.COLUMN_NAME_LATITUDE + "` = " + obj.getLatitude()
-					+ " AND `" + NoiseEntry.COLUMN_NAME_UNIXTIME + "` = "
+					+ NoiseEntry.COLUMN_NAME_LATITUDE + "` = "
+					+ obj.getLatitude() + " AND `"
+					+ NoiseEntry.COLUMN_NAME_UNIXTIME + "` = "
 					+ obj.getDateTime() + ";";
 			noisyGlobeDataBase.execSQL(query);
+		} catch (Exception e) {
+			createTables(noisyGlobeDataBase);
+		}
+	}
+
+	public void clearLocalStorage() {
+		try {
+			String query = "DELETE FROM `" + NoiseEntry.TABLE_NAME + "`;";
+			noisyGlobeDataBase.execSQL(query);
+
 		} catch (Exception e) {
 			createTables(noisyGlobeDataBase);
 		}

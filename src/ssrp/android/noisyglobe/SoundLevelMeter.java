@@ -12,8 +12,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import android.telephony.TelephonyManager;
-import android.widget.TextView;
+import android.util.Log;
 
 public class SoundLevelMeter {
 
@@ -21,12 +20,8 @@ public class SoundLevelMeter {
 
 	protected MediaRecorder mRecorder = null;
 	protected Double amp_ref = 0.6;
-	protected Integer mInterval = 200;
+	protected Integer mInterval = 500;
 	protected Integer record_rate = 1;
-
-	protected TextView txtSoundLevel;
-	protected TextView txtLongitude;
-	protected TextView txtLatitude;
 
 	protected Handler mHandler;
 	protected GPSTracker gpsTracker;
@@ -40,19 +35,16 @@ public class SoundLevelMeter {
 
 	protected Long startTime;
 	protected Long currentTime;
+	protected Timer timer;
+
+	protected Boolean paused = false;
 
 	public SoundLevelMeter(Activity _activity) {
 		this.activity = _activity;
-
-		txtSoundLevel = (TextView) this.activity
-				.findViewById(R.id.txtSoundLevel);
-		txtLongitude = (TextView) this.activity.findViewById(R.id.txtLongitude);
-		txtLatitude = (TextView) this.activity.findViewById(R.id.txtLatitude);
-
 		mHandler = new Handler();
 		gpsTracker = new GPSTracker(_activity);
 		dbHandler = new DataBaseHandler(_activity);
-
+		timer = new Timer();
 		try {
 			startTime = System.currentTimeMillis() / 1000L;
 			startMediaRecorder();
@@ -64,21 +56,23 @@ public class SoundLevelMeter {
 	}
 
 	public void measureSoundLevel() {
-		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override
 			public void run() {
-				if (gpsTracker.canGetLocation) {
+				if (gpsTracker.canGetLocation && !paused) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
 					latitude = gpsTracker.getLatitude();
 					soundPressureLevel = getMaximumAmplitude();
-					updateApplicationUi(soundPressureLevel);
 					if ((currentTime - startTime) >= record_rate) {
-						storeSoundData(
-								getAverageSoundLevel(soundPressureLevelArrayList),
-								longitude, latitude);
+						double averageSound = getAverageSoundLevel(soundPressureLevelArrayList);
+						Log.v("soundPressureLevel",
+								Double.toString(averageSound));
+						if (averageSound > 0.0) {
+							storeSoundData(averageSound, longitude, latitude);
+							soundPressureLevel = averageSound;
+						}
 						startTime = currentTime;
 						soundPressureLevelArrayList.clear();
 					} else {
@@ -88,6 +82,15 @@ public class SoundLevelMeter {
 			}
 
 		}, 0, mInterval);
+	}
+
+	public void stopMeasuringSoundLevel() {
+		soundPressureLevel = 0.0;
+		paused = true;
+	}
+
+	public void startMeasuringSoundLevel() {
+		paused = false;
 	}
 
 	protected double getAverageSoundLevel(
@@ -137,30 +140,14 @@ public class SoundLevelMeter {
 	}
 
 	protected void updateApplicationUi(Double spl) {
-		if (spl > 0) {
-			txtSoundLevel.post(new Runnable() {
-				public void run() {
-					txtSoundLevel.setText(Double.toString(soundPressureLevel));
-				}
-			});
-			txtLongitude.post(new Runnable() {
-				public void run() {
-					txtLongitude.setText(Double.toString(longitude));
-				}
-			});
-			txtLatitude.post(new Runnable() {
-				public void run() {
-					txtLatitude.setText(Double.toString(latitude));
-				}
-			});
-		}
+
 	}
 
 	protected void storeSoundData(Double spl, Double longitude, Double latitude) {
 		if (spl > 0) {
 			String param[] = { Double.toString(spl),
 					Double.toString(longitude), Double.toString(latitude),
-					Long.toString(System.currentTimeMillis() / 1000L)};
+					Long.toString(System.currentTimeMillis() / 1000L) };
 
 			dbHandler.insertTableDataRow(NoiseEntry.TABLE_NAME, param);
 		}
@@ -172,4 +159,17 @@ public class SoundLevelMeter {
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		return netInfo != null && netInfo.isConnectedOrConnecting();
 	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public Double getSoundPressureLevel() {
+		return soundPressureLevel;
+	}
+
 }

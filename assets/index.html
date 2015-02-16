@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+    html { height: 100%; width: 100% }
+    body { height: 100%; width: 100%; margin: 0px; padding: 0px }
+      #map-canvas {
+        width: 500px;
+        height: 100%;
+      }
+      #chartContainer { height: 35%; width: 100%;z-index: 3;position: absolute;top: 10px;left: 10px;right: 10px}
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script type="text/javascript" src="http://156.56.93.34/NoisyGlobe/js/canvasjs.min.js"></script>
+    <script>
+    window.onload = function () {
+		initialize();
+		// dataPoints
+		var dataPoints1 = [];
+
+		var chart = new CanvasJS.Chart("chartContainer",{
+			zoomEnabled: true,
+			title: {
+				text: "Current Sound Level"		
+			},
+			toolTip: {
+				shared: true
+				
+			},
+			legend: {
+				verticalAlign: "top",
+				horizontalAlign: "center",
+                                fontSize: 14,
+				fontWeight: "bold",
+				fontFamily: "calibri",
+				fontColor: "dimGrey"
+			},
+			axisX: {
+				title: "chart updates every 1 secs"
+			},
+			axisY:{
+				suffix: 'dB',
+				includeZero: false
+			}, 
+			data: [{ 
+				// dataSeries1
+				type: "line",
+				xValueType: "dateTime",
+				showInLegend: true,
+				name: "Sound Level",
+				dataPoints: dataPoints1
+			}],
+          legend:{
+            cursor:"pointer",
+            itemclick : function(e) {
+              if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+              }
+              else {
+                e.dataSeries.visible = true;
+              }
+              chart.render();
+            }
+          }
+		});
+
+
+
+		var updateInterval = 1000;
+		// initial value
+		var yValue1 = 0; 
+
+		var time = new Date;
+		//time.setHours(9);
+		//time.setMinutes(30);
+		//time.setSeconds(00);
+		//time.setMilliseconds(00);
+		// starting at 9.30 am
+
+		var updateChart = function (count) {
+			count = count || 1;
+
+			// count is number of times loop runs to generate random dataPoints. 
+
+			for (var i = 0; i < count; i++) {
+				
+				// add interval duration to time				
+				time.setTime(time.getTime()+ updateInterval);
+				
+				
+				if(sound != null){
+					yValue1 = Math.round(parseFloat(sound)*100)/100;
+				}
+				
+				// pushing the new values
+				dataPoints1.push({
+					x: time.getTime(),
+					y: yValue1
+				});
+
+
+			};
+
+			// updating legend text with  updated with y Value 
+			chart.options.data[0].legendText = "Sound Level : " + yValue1 + " dB";
+
+			chart.render();
+
+		};
+
+		 
+		// update chart after specified interval 
+		setInterval(function(){updateChart()}, updateInterval); 
+
+	}
+    	var map;
+        var markersArray = [];
+    // Deletes all markers in the array by removing references to them
+        function deleteOverlays() {
+            if (markersArray) {
+                for (i in markersArray) {
+                    markersArray[i].setMap(null);
+                }
+            markersArray.length = 0;
+            }
+        }
+    function placeMarker(location) {
+            // first remove all markers if there are any
+            deleteOverlays();
+
+            var marker = new google.maps.Marker({
+                position: location, 
+                title: 'You are Here',
+                map: map,
+            });
+
+            // add marker in markers array
+            markersArray.push(marker);
+
+            //map.setCenter(location);
+        }
+      function initialize() {
+        var mapCanvas = document.getElementById('map-canvas');
+        var mapOptions = {
+          center: new google.maps.LatLng(7.0, 81.0),
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        map = new google.maps.Map(mapCanvas, mapOptions);
+        setInterval(function(){ 
+  			longLatSound = Android.getLongitudeLatitudeSound(); 
+  			if(longLatSound != null){
+  				var values = longLatSound.split(":");
+  				var long = values[0];
+  				var lat = values[1];
+  				sound = values[2];
+  				var myLatlng = new google.maps.LatLng(lat, long);  				
+  				placeMarker(myLatlng);
+  			}
+  		}, 300);
+      }
+      //google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+    <div id="chartContainer"></div>
+  </body>
+</html>

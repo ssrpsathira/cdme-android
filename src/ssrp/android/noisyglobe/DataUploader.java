@@ -25,12 +25,14 @@ public class DataUploader {
 	protected Integer uploadIntervel = 2000;
 	protected String imei;
 	protected HttpResponse httpresponse;
+	protected ConnectionDetector cd;
 
 	public DataUploader(Activity _activity) {
 		dbHandler = new DataBaseHandler(_activity);
 		tlphnyMngr = (TelephonyManager) _activity
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		imei = tlphnyMngr.getDeviceId();
+		this.cd = new ConnectionDetector(_activity);
 	}
 
 	public void uploadSoundValues() {
@@ -38,22 +40,34 @@ public class DataUploader {
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				ArrayList<NoiseObject> noiseObjectsArrayList = new ArrayList<NoiseObject>();
-				noiseObjectsArrayList = dbHandler
-						.getNoiseEntries(NoiseEntry.TABLE_NAME);
-				if (noiseObjectsArrayList != null) {
-					for (NoiseObject obj : noiseObjectsArrayList) {
-						if(uploadNoiseDataEntry(obj).getStatusLine().getStatusCode() == 200){
-							markAsUploadedEntity(obj);
+				if (cd.isConnectingToInternet()) {
+					ArrayList<NoiseObject> noiseObjectsArrayList = new ArrayList<NoiseObject>();
+					noiseObjectsArrayList = dbHandler
+							.getNoiseEntries(NoiseEntry.TABLE_NAME);
+					Log.v("hi", "hmm");
+					if (noiseObjectsArrayList != null) {
+						Log.v("hi", "not null");
+						for (NoiseObject obj : noiseObjectsArrayList) {
+							if (uploadNoiseDataEntry(obj).getStatusLine()
+									.getStatusCode() == 200) {
+								Log.v("sound upload", Double.toString(obj.getLongitude()));
+								Log.v("sound upload", Double.toString(obj.getLatitude()));
+								deleteEntityFromLocalStorage(obj);
+								//clearLocalStorage();
+							}
 						}
 					}
 				}
 			}
 		}, 0, uploadIntervel);
 	}
+
+	public void deleteEntityFromLocalStorage(NoiseObject obj) {
+		dbHandler.deleteEntityFromLocalStorage(obj);
+	}
 	
-	public void markAsUploadedEntity(NoiseObject obj){
-		dbHandler.updateNoiseEntry(obj);
+	public void clearLocalStorage(){
+		dbHandler.clearLocalStorage();
 	}
 
 	public HttpResponse uploadNoiseDataEntry(NoiseObject obj) {
