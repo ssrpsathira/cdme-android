@@ -6,7 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ssrp.android.noisyglobe.CdmeNoiseData.NoiseEntry;
-import android.app.Activity;
 import android.content.Context;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
@@ -16,7 +15,7 @@ import android.util.Log;
 
 public class SoundLevelMeter {
 
-	public Activity activity;
+	public Context context;
 
 	protected MediaRecorder mRecorder = null;
 	protected Double amp_ref = 0.6;
@@ -39,11 +38,11 @@ public class SoundLevelMeter {
 
 	protected Boolean paused = false;
 
-	public SoundLevelMeter(Activity _activity) {
-		this.activity = _activity;
+	public SoundLevelMeter(Context context) {
+		this.context = context;
 		mHandler = new Handler();
-		gpsTracker = new GPSTracker(_activity);
-		dbHandler = new DataBaseHandler(_activity);
+		gpsTracker = new GPSTracker(context);
+		dbHandler = new DataBaseHandler(context);
 		timer = new Timer();
 		try {
 			startTime = System.currentTimeMillis() / 1000L;
@@ -154,7 +153,7 @@ public class SoundLevelMeter {
 	}
 
 	protected boolean isOnline() {
-		ConnectivityManager cm = (ConnectivityManager) this.activity
+		ConnectivityManager cm = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		return netInfo != null && netInfo.isConnectedOrConnecting();

@@ -1,61 +1,40 @@
 package ssrp.android.noisyglobe;
 
-import android.support.v7.app.ActionBarActivity;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 
-public class MainActivity extends ActionBarActivity implements SensorEventListener{
+public class MainActivity extends FragmentActivity {
 
-	public static SoundLevelMeter slm;
+	public ViewPager viewPager = null;
 	DataUploader dataUploader;
-	
-	private SensorManager mSensorManager;
-    private Sensor mProximity;
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		
-		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-
-		
-		WebView myWebView = (WebView) findViewById(R.id.webview);
-		myWebView.loadUrl("file:///android_asset/index.html");
-		WebSettings webSettings = myWebView.getSettings();
-		webSettings.setJavaScriptEnabled(true);
-		myWebView.addJavascriptInterface(new WebAppInterface(this), "Android");
-		
-		slm = new SoundLevelMeter(this);
-		slm.measureSoundLevel();
+		setContentView(R.layout.fragment_main);
+		viewPager = (ViewPager) findViewById(R.id.pager);
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		viewPager.setAdapter(new NoisyGlobeFragmentAdapter(fragmentManager));
 		
 		dataUploader = new DataUploader(this);
 		dataUploader.uploadSoundValues();
-		
+
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
-		slm.measureSoundLevel();
 	};
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mSensorManager.unregisterListener(this);
-		slm.stopMediaRecorder();
 	};
 
 	@Override
@@ -77,19 +56,38 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
 		return super.onOptionsItemSelected(item);
 	}
 
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		Log.v("sensor event", Float.toString(event.values[0]));
-		if(event.values[0] > 0.0){
-			slm.startMeasuringSoundLevel();
-		}else{
-			slm.stopMeasuringSoundLevel();
-		}
-	}
+	class NoisyGlobeFragmentAdapter extends FragmentPagerAdapter {
 
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
+		public NoisyGlobeFragmentAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public Fragment getItem(int arg0) {
+			Fragment fragment = null;
+			if (arg0 == 0) {
+				fragment = new MapViewFragment(getApplicationContext());
+			} else if (arg0 == 1) {
+				fragment = new SettingsViewFragment(getApplicationContext());
+			}
+			return fragment;
+		}
+
+		@Override
+		public int getCount() {
+			return 2;
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			String title = new String();
+			if (position == 0) {
+				title = "Noise Map";
+			} else if (position == 1) {
+				title = "Settings";
+			}
+			return title;
+		}
+
 	}
 }

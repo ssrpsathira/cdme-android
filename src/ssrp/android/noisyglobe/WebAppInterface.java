@@ -22,6 +22,6 @@ public class WebAppInterface {
 	 * @return */
 	@JavascriptInterface
 	public String getLongitudeLatitudeSound() {
-		return Double.toString(MainActivity.slm.getLongitude()) +":"+Double.toString(MainActivity.slm.getLatitude())+":"+Double.toString(MainActivity.slm.getSoundPressureLevel());
+		return Double.toString(MapViewFragment.slm.getLongitude()) +":"+Double.toString(MapViewFragment.slm.getLatitude())+":"+Double.toString(MapViewFragment.slm.getSoundPressureLevel());
 	}
 }

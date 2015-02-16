@@ -13,7 +13,6 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONObject;
 
 import ssrp.android.noisyglobe.CdmeNoiseData.NoiseEntry;
-import android.app.Activity;
 import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -27,12 +26,12 @@ public class DataUploader {
 	protected HttpResponse httpresponse;
 	protected ConnectionDetector cd;
 
-	public DataUploader(Activity _activity) {
-		dbHandler = new DataBaseHandler(_activity);
-		tlphnyMngr = (TelephonyManager) _activity
+	public DataUploader(Context context) {
+		dbHandler = new DataBaseHandler(context);
+		tlphnyMngr = (TelephonyManager) context
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		imei = tlphnyMngr.getDeviceId();
-		this.cd = new ConnectionDetector(_activity);
+		this.cd = new ConnectionDetector(context);
 	}
 
 	public void uploadSoundValues() {
