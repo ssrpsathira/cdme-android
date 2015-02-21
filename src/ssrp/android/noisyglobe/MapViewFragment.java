@@ -1,13 +1,8 @@
 package ssrp.android.noisyglobe;
 
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,11 +10,8 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-public class MapViewFragment extends Fragment implements SensorEventListener {
+public class MapViewFragment extends Fragment{
 	public static SoundLevelMeter slm;
-
-	private SensorManager mSensorManager;
-	private Sensor mProximity;
 
 	protected Context appContext;
 
@@ -43,9 +35,6 @@ public class MapViewFragment extends Fragment implements SensorEventListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mSensorManager = (SensorManager) appContext
-				.getSystemService(Context.SENSOR_SERVICE);
-		mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
 		slm = new SoundLevelMeter(appContext);
 		slm.measureSoundLevel();
@@ -54,17 +43,24 @@ public class MapViewFragment extends Fragment implements SensorEventListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		mSensorManager.registerListener(this, mProximity,
-				SensorManager.SENSOR_DELAY_NORMAL);
+		
+		slm.startMeasuringSoundLevel();
 		slm.measureSoundLevel();
 	};
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		mSensorManager.unregisterListener(this);
+		
+		slm.stopMeasuringSoundLevel();
 		slm.stopMediaRecorder();
 	};
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
+	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -76,21 +72,5 @@ public class MapViewFragment extends Fragment implements SensorEventListener {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		Log.v("sensor event", Float.toString(event.values[0]));
-		if (event.values[0] > 0.0) {
-			slm.startMeasuringSoundLevel();
-		} else {
-			slm.stopMeasuringSoundLevel();
-		}
-	}
-
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-
 	}
 }

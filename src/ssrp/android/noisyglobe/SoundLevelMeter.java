@@ -7,20 +7,25 @@ import java.util.TimerTask;
 
 import ssrp.android.noisyglobe.CdmeNoiseData.NoiseEntry;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.Log;
 
-public class SoundLevelMeter {
+public class SoundLevelMeter implements SensorEventListener {
 
 	public Context context;
 
 	protected MediaRecorder mRecorder = null;
 	protected Double amp_ref = 0.6;
-	protected Integer mInterval = 500;
-	protected Integer record_rate = 1;
+	protected Integer mInterval = 3000;
+	protected Integer record_rate = 5;
 
 	protected Handler mHandler;
 	protected GPSTracker gpsTracker;
@@ -37,6 +42,11 @@ public class SoundLevelMeter {
 	protected Timer timer;
 
 	protected Boolean paused = false;
+	private SensorManager mSensorManager;
+	protected AudioManager audioManager;
+	private Sensor mProximity;
+
+	protected boolean isPausedInCall = false;
 
 	public SoundLevelMeter(Context context) {
 		this.context = context;
@@ -44,14 +54,28 @@ public class SoundLevelMeter {
 		gpsTracker = new GPSTracker(context);
 		dbHandler = new DataBaseHandler(context);
 		timer = new Timer();
-		try {
-			startTime = System.currentTimeMillis() / 1000L;
-			startMediaRecorder();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		mSensorManager = (SensorManager) context
+				.getSystemService(Context.SENSOR_SERVICE);
+		mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+		mSensorManager.registerListener(this, mProximity,
+				SensorManager.SENSOR_DELAY_NORMAL);
+
+		audioManager = (AudioManager) context
+				.getSystemService(Context.AUDIO_SERVICE);
+
+		startTime = System.currentTimeMillis() / 1000L;
+		startMediaRecorder();
+
+	}
+
+	protected boolean isLoudspeakerOn() {
+		boolean value = false;
+		if (audioManager.isMusicActive()) {
+			value = true;
+			Log.i("music on", "music on");
 		}
+		return value;
 	}
 
 	public void measureSoundLevel() {
@@ -59,17 +83,20 @@ public class SoundLevelMeter {
 
 			@Override
 			public void run() {
-				if (gpsTracker.canGetLocation && !paused) {
+				boolean result = isLoudspeakerOn();
+				if (gpsTracker.canGetLocation && !paused && !result
+						&& !isPausedInCall) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
 					latitude = gpsTracker.getLatitude();
 					soundPressureLevel = getMaximumAmplitude();
 					if ((currentTime - startTime) >= record_rate) {
 						double averageSound = getAverageSoundLevel(soundPressureLevelArrayList);
-						Log.v("soundPressureLevel",
+						Log.i("soundPressureLevel",
 								Double.toString(averageSound));
 						if (averageSound > 0.0) {
-							storeSoundData(averageSound, longitude, latitude);
+							// storeSoundData(averageSound, longitude,
+							// latitude);
 							soundPressureLevel = averageSound;
 						}
 						startTime = currentTime;
@@ -77,6 +104,8 @@ public class SoundLevelMeter {
 					} else {
 						soundPressureLevelArrayList.add(soundPressureLevel);
 					}
+				} else {
+					soundPressureLevel = 0.0;
 				}
 			}
 
@@ -84,7 +113,6 @@ public class SoundLevelMeter {
 	}
 
 	public void stopMeasuringSoundLevel() {
-		soundPressureLevel = 0.0;
 		paused = true;
 	}
 
@@ -104,15 +132,20 @@ public class SoundLevelMeter {
 		return sum;
 	}
 
-	protected void startMediaRecorder() throws IllegalStateException,
-			IOException {
+	protected void startMediaRecorder() {
 		if (mRecorder == null) {
 			mRecorder = new MediaRecorder();
 			mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 			mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 			mRecorder.setOutputFile("/dev/null");
-			mRecorder.prepare();
+			try {
+				mRecorder.prepare();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			mRecorder.start();
 		}
 	}
@@ -120,6 +153,7 @@ public class SoundLevelMeter {
 	protected void stopMediaRecorder() {
 		if (mRecorder != null) {
 			mRecorder.stop();
+			mRecorder.reset();
 			mRecorder.release();
 			mRecorder = null;
 		}
@@ -169,6 +203,25 @@ public class SoundLevelMeter {
 
 	public Double getSoundPressureLevel() {
 		return soundPressureLevel;
+	}
+
+	public void cancelTimers() {
+		timer.cancel();
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		Log.v("sensor event", Float.toString(event.values[0]));
+		if (event.values[0] > 0.0) {
+			startMeasuringSoundLevel();
+		} else {
+			stopMeasuringSoundLevel();
+		}
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
 	}
 
 }

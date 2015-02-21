@@ -21,10 +21,11 @@ public class DataUploader {
 
 	protected TelephonyManager tlphnyMngr;
 	protected DataBaseHandler dbHandler;
-	protected Integer uploadIntervel = 2000;
+	protected Integer uploadIntervel = 1000;
 	protected String imei;
 	protected HttpResponse httpresponse;
 	protected ConnectionDetector cd;
+	protected Timer timer;
 
 	public DataUploader(Context context) {
 		dbHandler = new DataBaseHandler(context);
@@ -35,10 +36,16 @@ public class DataUploader {
 	}
 
 	public void uploadSoundValues() {
-		Timer timer = new Timer();
+		timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
+				String mode = dbHandler.getDataUploadMode();
+				if(mode.equals(SettingsViewFragment.DATA_UPLOAD_MODE_WIFI)){
+					if(!cd.isWifiConnected()){
+						return;
+					}
+				}
 				if (cd.isConnectingToInternet()) {
 					ArrayList<NoiseObject> noiseObjectsArrayList = new ArrayList<NoiseObject>();
 					noiseObjectsArrayList = dbHandler
@@ -101,5 +108,9 @@ public class DataUploader {
 			e.printStackTrace();
 		}
 		return httpresponse;
+	}
+
+	public void cancelTimers() {
+		timer.cancel();
 	}
 }

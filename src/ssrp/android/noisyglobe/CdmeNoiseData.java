@@ -9,6 +9,7 @@ public final class CdmeNoiseData {
 	/* Inner class that defines the table contents */
     public static abstract class NoiseEntry implements BaseColumns {
         public static final String TABLE_NAME = "cdme_noise_data";
+        public static final String SETTINGS_TABLE_NAME = "noisy_globe_settings";
         
         public static final String COLUMN_NAME_ID = "id";
         public static final String COLUMN_NAME_SOUND_LEVEL = "sound_level";

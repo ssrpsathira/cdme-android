@@ -38,11 +38,11 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 					+ param[3] + ", 0);";
 			noisyGlobeDataBase.execSQL(query);
 		} catch (SQLiteException s) {
-			createTables(noisyGlobeDataBase);
+			s.printStackTrace();
 		}
 	}
 
-	public void createTables(SQLiteDatabase db) {
+	public void createTables() {
 		String query = "CREATE TABLE IF NOT EXISTS `" + NoiseEntry.TABLE_NAME
 				+ "` (`" + NoiseEntry.COLUMN_NAME_ID
 				+ "` INTEGER PRIMARY KEY, `"
@@ -51,7 +51,11 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 				+ NoiseEntry.COLUMN_NAME_LATITUDE + "` TEXT, `"
 				+ NoiseEntry.COLUMN_NAME_UNIXTIME + "` TEXT, `"
 				+ NoiseEntry.COLUMN_NAME_IS_UPLOADED + "` INT DEFAULT 0);";
-		db.execSQL(query);
+		noisyGlobeDataBase.execSQL(query);
+
+		query = "CREATE TABLE IF NOT EXISTS `" + NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` (`property` VARCHAR(50) PRIMARY KEY, `value` VARCHAR(50))";
+		noisyGlobeDataBase.execSQL(query);
 	}
 
 	public ArrayList<NoiseObject> getNoiseEntries(String tableName) {
@@ -77,7 +81,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 				return noiseObjectsArrayList;
 			}
 		} catch (Exception e) {
-			createTables(noisyGlobeDataBase);
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -95,7 +99,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 					+ obj.getDateTime() + ";";
 			noisyGlobeDataBase.execSQL(query);
 		} catch (Exception e) {
-			createTables(noisyGlobeDataBase);
+			e.printStackTrace();
 		}
 	}
 
@@ -105,8 +109,33 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 			noisyGlobeDataBase.execSQL(query);
 
 		} catch (Exception e) {
-			createTables(noisyGlobeDataBase);
+			e.printStackTrace();
 		}
+	}
+
+	public void setOperationalMode(String mode) {
+		String query = "REPLACE INTO `" + NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` (`property`, `value`) VALUES ('operational_mode', '"
+				+ mode + "');";
+		noisyGlobeDataBase.execSQL(query);
+	}
+
+	public String getOperationalMode() {
+		String value = null;
+		String query = "SELECT `value` FROM `" + NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` WHERE `property` = 'operational_mode';";
+		Cursor c = noisyGlobeDataBase.rawQuery(query, null);
+		if (!c.equals(null) && c.moveToFirst()) {
+			do {
+				value = c.getString(0);
+			} while (c.moveToNext());
+		}
+		if (value.equals(null) || value.equals("application")) {
+			value = SettingsViewFragment.OPERATIONAL_MODE_APPLICATION;
+		} else if (value.equals("service")) {
+			value = SettingsViewFragment.OPERATIONAL_MODE_SERVICE;
+		}
+		return value;
 	}
 
 	@Override
@@ -121,11 +150,40 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 				+ NoiseEntry.COLUMN_NAME_IS_UPLOADED + "` INT DEFAULT 0);";
 		db.execSQL(query);
 
+		query = "CREATE TABLE IF NOT EXISTS `"
+				+ NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` (`property` VARCHAR(50) PRIMARY KEY, `value` VARCHAR(50));";
+		db.execSQL(query);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void setDataUploadMode(String mode) {
+		String query = "REPLACE INTO `" + NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` (`property`, `value`) VALUES ('data_upload_mode', '"
+				+ mode + "');";
+		noisyGlobeDataBase.execSQL(query);
+	}
+
+	public String getDataUploadMode() {
+		String value = null;
+		String query = "SELECT `value` FROM `" + NoiseEntry.SETTINGS_TABLE_NAME
+				+ "` WHERE `property` = 'data_upload_mode';";
+		Cursor c = noisyGlobeDataBase.rawQuery(query, null);
+		if (!c.equals(null) && c.moveToFirst()) {
+			do {
+				value = c.getString(0);
+			} while (c.moveToNext());
+		}
+		if (value == null || value.equals("wifi")) {
+			value = SettingsViewFragment.DATA_UPLOAD_MODE_WIFI;
+		} else if (value.equals("wifi_if_available")) {
+			value = SettingsViewFragment.DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE;
+		}
+		return value;
 	}
 }

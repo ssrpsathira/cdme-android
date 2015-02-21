@@ -15,12 +15,22 @@ import android.widget.Toast;
 public class SettingsViewFragment extends Fragment implements
 		OnItemSelectedListener {
 	protected Context context;
-	private Spinner spinner;
-	private static final String[] operationalModeChoises = { "Foreground Only",
-			"Service on Close" };
+	protected DataBaseHandler dbHandler;
+	private Spinner spinnerOperationalMode;
+	private Spinner spinnerDataUploadMode;
+
+	public static final String OPERATIONAL_MODE_APPLICATION = "Foreground Only";
+	public static final String OPERATIONAL_MODE_SERVICE = "Service on Close";
+	public static final String DATA_UPLOAD_MODE_WIFI = "WiFi";
+	public static final String DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE = "WiFi if Available";
+	private static final String[] operationalModeChoises = {
+			OPERATIONAL_MODE_APPLICATION, OPERATIONAL_MODE_SERVICE };
+	private static final String[] dataUploadModeChoises = {
+			DATA_UPLOAD_MODE_WIFI, DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE };
 
 	public SettingsViewFragment(Context applicationContext) {
 		this.context = applicationContext;
+		dbHandler = new DataBaseHandler(context);
 	}
 
 	@Override
@@ -28,13 +38,38 @@ public class SettingsViewFragment extends Fragment implements
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_settings, container,
 				false);
-		spinner = (Spinner) view.findViewById(R.id.spinner_operational_mode);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-				R.layout.custom_spinner_item, operationalModeChoises);
+		spinnerOperationalMode = (Spinner) view
+				.findViewById(R.id.spinner_operational_mode);
+		ArrayAdapter<String> adapterOperationalMode = new ArrayAdapter<String>(
+				context, R.layout.custom_spinner_item, operationalModeChoises);
+		spinnerDataUploadMode = (Spinner) view
+				.findViewById(R.id.spinner_data_upload_mode);
+		ArrayAdapter<String> adapterDataUploadMode = new ArrayAdapter<String>(
+				context, R.layout.custom_spinner_item, dataUploadModeChoises);
 
-		adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
-		spinner.setAdapter(adapter);
-		spinner.setOnItemSelectedListener(this);
+		adapterOperationalMode
+				.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+		spinnerOperationalMode.setAdapter(adapterOperationalMode);
+		String operationalMode = dbHandler.getOperationalMode();
+		if (!operationalMode.equals(null)) {
+			int spinnerPostion = adapterOperationalMode
+					.getPosition(operationalMode);
+			spinnerOperationalMode.setSelection(spinnerPostion);
+			spinnerPostion = 0;
+		}
+		spinnerOperationalMode.setOnItemSelectedListener(this);
+
+		adapterDataUploadMode
+				.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+		spinnerDataUploadMode.setAdapter(adapterDataUploadMode);
+		String dataUploadMode = dbHandler.getDataUploadMode();
+		if (!dataUploadMode.equals(null)) {
+			int spinnerPostion = adapterDataUploadMode
+					.getPosition(dataUploadMode);
+			spinnerDataUploadMode.setSelection(spinnerPostion);
+			spinnerPostion = 0;
+		}
+		spinnerDataUploadMode.setOnItemSelectedListener(this);
 		return view;
 	}
 
@@ -46,13 +81,31 @@ public class SettingsViewFragment extends Fragment implements
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position,
 			long id) {
-		Toast.makeText(parent.getContext(), 
-		        "OnItemSelectedListener : " + parent.getItemAtPosition(position).toString(),
-		        Toast.LENGTH_SHORT).show();
+		String option = parent.getItemAtPosition(position).toString();
+		Toast.makeText(parent.getContext(),
+				"OnItemSelectedListener : " + option, Toast.LENGTH_SHORT)
+				.show();
+		if (option.equals(OPERATIONAL_MODE_APPLICATION)) {
+			setOperationalMode("application");
+		} else if (option.equals(OPERATIONAL_MODE_SERVICE)) {
+			setOperationalMode("service");
+		} else if (option.equals(DATA_UPLOAD_MODE_WIFI)) {
+			setDataUploadMode("wifi");
+		} else if (option.equals(DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE)) {
+			setDataUploadMode("wifi_if_available");
+		}
 	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 
+	}
+
+	protected void setOperationalMode(String mode) {
+		dbHandler.setOperationalMode(mode);
+	}
+
+	protected void setDataUploadMode(String mode) {
+		dbHandler.setDataUploadMode(mode);
 	}
 }

@@ -5,12 +5,17 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends FragmentActivity {
 
+	protected DataBaseHandler dbHandler;
 	public ViewPager viewPager = null;
 	DataUploader dataUploader;
 
@@ -18,10 +23,14 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_main);
+
+		dbHandler = new DataBaseHandler(this);
+		dbHandler.createTables();
+
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		viewPager.setAdapter(new NoisyGlobeFragmentAdapter(fragmentManager));
-		
+
 		dataUploader = new DataUploader(this);
 		dataUploader.uploadSoundValues();
 
@@ -30,11 +39,18 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if (isNoisyGlobeServiceRunning(NoisyGlobeService.class)) {
+			stopService(new Intent(getBaseContext(), NoisyGlobeService.class));
+		}
 	};
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		String mode = dbHandler.getOperationalMode();
+		if (mode.equals(SettingsViewFragment.OPERATIONAL_MODE_SERVICE)) {
+			startService(new Intent(getBaseContext(), NoisyGlobeService.class));
+		}
 	};
 
 	@Override
@@ -54,6 +70,17 @@ public class MainActivity extends FragmentActivity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	protected boolean isNoisyGlobeServiceRunning(Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		for (RunningServiceInfo service : manager
+				.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	class NoisyGlobeFragmentAdapter extends FragmentPagerAdapter {
