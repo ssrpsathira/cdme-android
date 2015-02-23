@@ -50,14 +50,15 @@ public class DataUploader {
 					ArrayList<NoiseObject> noiseObjectsArrayList = new ArrayList<NoiseObject>();
 					noiseObjectsArrayList = dbHandler
 							.getNoiseEntries(NoiseEntry.TABLE_NAME);
-					Log.v("hi", "hmm");
+					Log.i("hi", "initiated uploading");
 					if (noiseObjectsArrayList != null) {
-						Log.v("hi", "not null");
+						Log.i("hi", "not null");
 						for (NoiseObject obj : noiseObjectsArrayList) {
 							if (uploadNoiseDataEntry(obj).getStatusLine()
 									.getStatusCode() == 200) {
-								Log.v("sound upload", Double.toString(obj.getLongitude()));
-								Log.v("sound upload", Double.toString(obj.getLatitude()));
+								Log.i("sound upload", Double.toString(obj.getLongitude()));
+								Log.i("sound upload", Double.toString(obj.getLatitude()));
+								Log.i("sound upload", Double.toString(obj.getSoundLevel()));
 								deleteEntityFromLocalStorage(obj);
 								//clearLocalStorage();
 							}

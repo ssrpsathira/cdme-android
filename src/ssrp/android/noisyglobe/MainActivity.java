@@ -50,6 +50,7 @@ public class MainActivity extends FragmentActivity {
 		String mode = dbHandler.getOperationalMode();
 		if (mode.equals(SettingsViewFragment.OPERATIONAL_MODE_SERVICE)) {
 			startService(new Intent(getBaseContext(), NoisyGlobeService.class));
+			android.os.Process.killProcess(android.os.Process.myPid());
 		}
 	};
 

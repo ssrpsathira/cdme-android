@@ -26,8 +26,6 @@ public class GPSTracker extends Service implements LocationListener {
 	double latitude; // latitude
 	double longitude; // longitude
 
-	protected ConnectionDetector cnnDtctr;
-
 	// The minimum distance to change Updates in meters
 	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1;
 
@@ -39,19 +37,10 @@ public class GPSTracker extends Service implements LocationListener {
 
 	public GPSTracker(Context context) {
 		this.mContext = context;
-		cnnDtctr = new ConnectionDetector(context);
 		getLocation();
 	}
 
 	public Location getLocation() {
-		if (cnnDtctr.isConnectingToInternet()) {
-			canGetLocation = true;
-		} else {
-			canGetLocation = false;
-		}
-		if (!canGetLocation) {
-			return null;
-		}
 		try {
 			locationManager = (LocationManager) mContext
 					.getSystemService(LOCATION_SERVICE);
@@ -69,7 +58,7 @@ public class GPSTracker extends Service implements LocationListener {
 				locationManager.requestLocationUpdates(
 						LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES,
 						MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-				Log.d("GPS Enabled", "GPS Enabled");
+				Log.i("GPS Enabled", "GPS Enabled");
 				if (locationManager != null) {
 					location = locationManager
 							.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -78,11 +67,12 @@ public class GPSTracker extends Service implements LocationListener {
 						longitude = location.getLongitude();
 					}
 				}
+				canGetLocation = true;
 			} else if (isNetworkEnabled) {
 				locationManager.requestLocationUpdates(
 						LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES,
 						MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-				Log.d("Network", "Network");
+				Log.i("Network", "Network");
 				if (locationManager != null) {
 					location = locationManager
 							.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -91,8 +81,9 @@ public class GPSTracker extends Service implements LocationListener {
 						longitude = location.getLongitude();
 					}
 				}
+				canGetLocation = true;
 			} else {
-				this.canGetLocation = false;
+				canGetLocation = false;
 			}
 
 		} catch (Exception e) {

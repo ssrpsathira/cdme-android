@@ -78,6 +78,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 					noiseObjectsArrayList.add(noiseObject);
 
 				} while (c.moveToNext());
+				c.close();
 				return noiseObjectsArrayList;
 			}
 		} catch (Exception e) {
@@ -129,6 +130,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 			do {
 				value = c.getString(0);
 			} while (c.moveToNext());
+			c.close();
 		}
 		if (value.equals(null) || value.equals("application")) {
 			value = SettingsViewFragment.OPERATIONAL_MODE_APPLICATION;
@@ -178,6 +180,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 			do {
 				value = c.getString(0);
 			} while (c.moveToNext());
+			c.close();
 		}
 		if (value == null || value.equals("wifi")) {
 			value = SettingsViewFragment.DATA_UPLOAD_MODE_WIFI;

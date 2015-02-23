@@ -46,8 +46,6 @@ public class SoundLevelMeter implements SensorEventListener {
 	protected AudioManager audioManager;
 	private Sensor mProximity;
 
-	protected boolean isPausedInCall = false;
-
 	public SoundLevelMeter(Context context) {
 		this.context = context;
 		mHandler = new Handler();
@@ -84,8 +82,8 @@ public class SoundLevelMeter implements SensorEventListener {
 			@Override
 			public void run() {
 				boolean result = isLoudspeakerOn();
-				if (gpsTracker.canGetLocation && !paused && !result
-						&& !isPausedInCall) {
+				Log.i("debug", Boolean.toString(paused));
+				if (gpsTracker.canGetLocation && !paused && !result) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
 					latitude = gpsTracker.getLatitude();
