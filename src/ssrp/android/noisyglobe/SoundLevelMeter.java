@@ -118,8 +118,7 @@ public class SoundLevelMeter implements SensorEventListener {
 						Log.i("soundPressureLevel",
 								Double.toString(averageSound));
 						if (averageSound > 0.0) {
-							// storeSoundData(averageSound, longitude,
-							// latitude);
+							storeSoundData(averageSound, longitude, latitude);
 							soundPressureLevel = averageSound;
 						}
 						startTime = currentTime;
