@@ -8,5 +8,9 @@
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
     <string name="no_text"></string>
+    <string name="no_connection">You need internet connectivity to see the noise map</string>
+    <string name="btn_retry_text">Retry</string>
+    <string name="txt_operational_mode_text">Operational Mode</string>
+    <string name="txt_data_upload_mode_text">Data Upload Mode</string>
 
 </resources>

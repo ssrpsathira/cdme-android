@@ -82,17 +82,26 @@ public class SettingsViewFragment extends Fragment implements
 	public void onItemSelected(AdapterView<?> parent, View view, int position,
 			long id) {
 		String option = parent.getItemAtPosition(position).toString();
-		Toast.makeText(parent.getContext(),
-				"OnItemSelectedListener : " + option, Toast.LENGTH_SHORT)
-				.show();
 		if (option.equals(OPERATIONAL_MODE_APPLICATION)) {
 			setOperationalMode("application");
+			Toast.makeText(parent.getContext(),
+					"Operational Mode : " + option, Toast.LENGTH_SHORT)
+					.show();
 		} else if (option.equals(OPERATIONAL_MODE_SERVICE)) {
 			setOperationalMode("service");
+			Toast.makeText(parent.getContext(),
+					"Operational Mode : " + option, Toast.LENGTH_SHORT)
+					.show();
 		} else if (option.equals(DATA_UPLOAD_MODE_WIFI)) {
 			setDataUploadMode("wifi");
+			Toast.makeText(parent.getContext(),
+					"Data Upload Mode : " + option, Toast.LENGTH_SHORT)
+					.show();
 		} else if (option.equals(DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE)) {
 			setDataUploadMode("wifi_if_available");
+			Toast.makeText(parent.getContext(),
+					"Data Upload Mode : " + option, Toast.LENGTH_SHORT)
+					.show();
 		}
 	}
 

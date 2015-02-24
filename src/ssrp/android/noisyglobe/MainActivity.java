@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 public class MainActivity extends FragmentActivity {
 
@@ -34,6 +35,21 @@ public class MainActivity extends FragmentActivity {
 		dataUploader = new DataUploader(this);
 		dataUploader.uploadSoundValues();
 
+	}
+
+	public void onClickRetry(View v) {
+		restartApplication();
+	}
+
+	public void restartApplication() {
+
+		Intent intent = getIntent();
+		overridePendingTransition(0, 0);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+		finish();
+
+		overridePendingTransition(0, 0);
+		startActivity(intent);
 	}
 
 	@Override

@@ -11,7 +11,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="26dp"
         android:layout_marginTop="31dp"
-        android:text="Operational Mode"
+        android:text="@string/txt_operational_mode_text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Spinner
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/spinner_operational_mode"
         android:layout_below="@+id/spinner_operational_mode"
-        android:text="Data Upload Mode"
+        android:text="@string/txt_data_upload_mode_text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Spinner

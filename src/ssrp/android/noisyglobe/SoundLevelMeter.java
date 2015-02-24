@@ -16,6 +16,8 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class SoundLevelMeter implements SensorEventListener {
@@ -46,6 +48,10 @@ public class SoundLevelMeter implements SensorEventListener {
 	protected AudioManager audioManager;
 	private Sensor mProximity;
 
+	protected Boolean isPausedInCall = false;
+	protected PhoneStateListener phoneStateListener;
+	protected TelephonyManager telephonyManager;
+
 	public SoundLevelMeter(Context context) {
 		this.context = context;
 		mHandler = new Handler();
@@ -61,6 +67,25 @@ public class SoundLevelMeter implements SensorEventListener {
 
 		audioManager = (AudioManager) context
 				.getSystemService(Context.AUDIO_SERVICE);
+
+		telephonyManager = (TelephonyManager) context
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		phoneStateListener = new PhoneStateListener() {
+			@Override
+			public void onCallStateChanged(int state, String incomingNumber) {
+				switch (state) {
+				case TelephonyManager.CALL_STATE_OFFHOOK:
+				case TelephonyManager.CALL_STATE_RINGING:
+					isPausedInCall = true;
+					break;
+				case TelephonyManager.CALL_STATE_IDLE:
+					isPausedInCall = false;
+					break;
+				}
+			}
+		};
+		telephonyManager.listen(phoneStateListener,
+				PhoneStateListener.LISTEN_CALL_STATE);
 
 		startTime = System.currentTimeMillis() / 1000L;
 		startMediaRecorder();
@@ -82,8 +107,8 @@ public class SoundLevelMeter implements SensorEventListener {
 			@Override
 			public void run() {
 				boolean result = isLoudspeakerOn();
-				Log.i("debug", Boolean.toString(paused));
-				if (gpsTracker.canGetLocation && !paused && !result) {
+				Log.i("debug", Boolean.toString(isPausedInCall));
+				if (gpsTracker.canGetLocation && !paused && !result && !isPausedInCall) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
 					latitude = gpsTracker.getLatitude();
