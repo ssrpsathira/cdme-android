@@ -41,8 +41,8 @@ public class DataUploader {
 			@Override
 			public void run() {
 				String mode = dbHandler.getDataUploadMode();
-				if(mode.equals(SettingsViewFragment.DATA_UPLOAD_MODE_WIFI)){
-					if(!cd.isWifiConnected()){
+				if (mode.equals(SettingsViewFragment.DATA_UPLOAD_MODE_WIFI)) {
+					if (!cd.isWifiConnected()) {
 						return;
 					}
 				}
@@ -50,17 +50,22 @@ public class DataUploader {
 					ArrayList<NoiseObject> noiseObjectsArrayList = new ArrayList<NoiseObject>();
 					noiseObjectsArrayList = dbHandler
 							.getNoiseEntries(NoiseEntry.TABLE_NAME);
-					Log.i("hi", "initiated uploading");
+					Log.i("data uploader", "initiated uploading");
 					if (noiseObjectsArrayList != null) {
-						Log.i("hi", "not null");
+						Log.i("data uploader", "noise object array not null");
 						for (NoiseObject obj : noiseObjectsArrayList) {
-							if (uploadNoiseDataEntry(obj).getStatusLine()
-									.getStatusCode() == 200) {
-								Log.i("sound upload", Double.toString(obj.getLongitude()));
-								Log.i("sound upload", Double.toString(obj.getLatitude()));
-								Log.i("sound upload", Double.toString(obj.getSoundLevel()));
+							int statusCode = uploadNoiseDataEntry(obj)
+									.getStatusLine().getStatusCode();
+							Log.i("status code", Integer.toString(statusCode));
+							if (statusCode == 200) {
+								Log.i("sound upload",
+										Double.toString(obj.getLongitude()));
+								Log.i("sound upload",
+										Double.toString(obj.getLatitude()));
+								Log.i("sound upload",
+										Double.toString(obj.getSoundLevel()));
 								deleteEntityFromLocalStorage(obj);
-								//clearLocalStorage();
+//								 clearLocalStorage();
 							}
 						}
 					}
@@ -72,8 +77,8 @@ public class DataUploader {
 	public void deleteEntityFromLocalStorage(NoiseObject obj) {
 		dbHandler.deleteEntityFromLocalStorage(obj);
 	}
-	
-	public void clearLocalStorage(){
+
+	public void clearLocalStorage() {
 		dbHandler.clearLocalStorage();
 	}
 

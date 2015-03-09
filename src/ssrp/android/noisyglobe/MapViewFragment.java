@@ -55,6 +55,8 @@ public class MapViewFragment extends Fragment{
 		
 		slm.startMeasuringSoundLevel();
 		slm.measureSoundLevel();
+		
+		slm.gpsTracker.getLocation();
 	};
 
 	@Override
@@ -63,6 +65,10 @@ public class MapViewFragment extends Fragment{
 		
 		slm.stopMeasuringSoundLevel();
 		slm.stopMediaRecorder();
+		
+		slm.gpsTracker.locationManager.removeGpsStatusListener(slm.gpsTracker);
+		slm.gpsTracker.locationManager.removeUpdates(slm.gpsTracker);
+		slm.gpsTracker.locationManager = null;
 	};
 	
 	@Override

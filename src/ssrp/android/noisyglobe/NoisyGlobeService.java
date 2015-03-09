@@ -23,6 +23,8 @@ public class NoisyGlobeService extends Service {
 		slm = new SoundLevelMeter(this);
 		slm.startMeasuringSoundLevel();
 		slm.measureSoundLevel();
+		
+		slm.gpsTracker.getLocation();
 
 		dataUploader = new DataUploader(this);
 		dataUploader.uploadSoundValues();
@@ -42,6 +44,19 @@ public class NoisyGlobeService extends Service {
 		if(slm.phoneStateListener != null){
 			slm.telephonyManager.listen(slm.phoneStateListener, PhoneStateListener.LISTEN_NONE);
 		}
+		slm.gpsTracker.locationManager.removeGpsStatusListener(slm.gpsTracker);
+		slm.gpsTracker.locationManager.removeUpdates(slm.gpsTracker);
+		slm.gpsTracker.locationManager = null;
 	}
+
+	public SoundLevelMeter getSlm() {
+		return slm;
+	}
+
+	public DataUploader getDataUploader() {
+		return dataUploader;
+	}
+	
+	
 
 }

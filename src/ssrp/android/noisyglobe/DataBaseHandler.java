@@ -21,12 +21,13 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 		createOrOpenDatabase();
 	}
 
-	protected void createOrOpenDatabase() {
+	public SQLiteDatabase createOrOpenDatabase() {
 		noisyGlobeDataBase = applicationContext.openOrCreateDatabase(
 				noisyGlobeDataBaseName, Context.MODE_PRIVATE, null);
+		return noisyGlobeDataBase;
 	}
 
-	public void insertTableDataRow(String tableName, String param[]) {
+	public boolean insertTableDataRow(String tableName, String param[]) {
 		try {
 			String query = "INSERT INTO " + tableName + " (`"
 					+ NoiseEntry.COLUMN_NAME_SOUND_LEVEL + "`,`"
@@ -37,12 +38,14 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 					+ param[0] + "," + param[1] + "," + param[2] + ","
 					+ param[3] + ", 0);";
 			noisyGlobeDataBase.execSQL(query);
+			return true;
 		} catch (SQLiteException s) {
 			s.printStackTrace();
+			return false;
 		}
 	}
 
-	public void createTables() {
+	public boolean createTables() {
 		String query = "CREATE TABLE IF NOT EXISTS `" + NoiseEntry.TABLE_NAME
 				+ "` (`" + NoiseEntry.COLUMN_NAME_ID
 				+ "` INTEGER PRIMARY KEY, `"
@@ -56,6 +59,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 		query = "CREATE TABLE IF NOT EXISTS `" + NoiseEntry.SETTINGS_TABLE_NAME
 				+ "` (`property` VARCHAR(50) PRIMARY KEY, `value` VARCHAR(50))";
 		noisyGlobeDataBase.execSQL(query);
+		return true;
 	}
 
 	public ArrayList<NoiseObject> getNoiseEntries(String tableName) {
@@ -87,7 +91,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 		return null;
 	}
 
-	public void deleteEntityFromLocalStorage(NoiseObject obj) {
+	public boolean deleteEntityFromLocalStorage(NoiseObject obj) {
 		try {
 			String query = "DELETE FROM " + NoiseEntry.TABLE_NAME + " WHERE `"
 					+ NoiseEntry.COLUMN_NAME_SOUND_LEVEL + "` = "
@@ -99,26 +103,30 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 					+ NoiseEntry.COLUMN_NAME_UNIXTIME + "` = "
 					+ obj.getDateTime() + ";";
 			noisyGlobeDataBase.execSQL(query);
+			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
-	public void clearLocalStorage() {
+	public boolean clearLocalStorage() {
 		try {
 			String query = "DELETE FROM `" + NoiseEntry.TABLE_NAME + "`;";
 			noisyGlobeDataBase.execSQL(query);
-
+			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
-	public void setOperationalMode(String mode) {
+	public boolean setOperationalMode(String mode) {
 		String query = "REPLACE INTO `" + NoiseEntry.SETTINGS_TABLE_NAME
 				+ "` (`property`, `value`) VALUES ('operational_mode', '"
 				+ mode + "');";
 		noisyGlobeDataBase.execSQL(query);
+		return true;
 	}
 
 	public String getOperationalMode() {
@@ -164,11 +172,12 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
 	}
 
-	public void setDataUploadMode(String mode) {
+	public boolean setDataUploadMode(String mode) {
 		String query = "REPLACE INTO `" + NoiseEntry.SETTINGS_TABLE_NAME
 				+ "` (`property`, `value`) VALUES ('data_upload_mode', '"
 				+ mode + "');";
 		noisyGlobeDataBase.execSQL(query);
+		return true;
 	}
 
 	public String getDataUploadMode() {

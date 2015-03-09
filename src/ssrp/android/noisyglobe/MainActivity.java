@@ -66,8 +66,8 @@ public class MainActivity extends FragmentActivity {
 		String mode = dbHandler.getOperationalMode();
 		if (mode.equals(SettingsViewFragment.OPERATIONAL_MODE_SERVICE)) {
 			startService(new Intent(getBaseContext(), NoisyGlobeService.class));
-			android.os.Process.killProcess(android.os.Process.myPid());
 		}
+		android.os.Process.killProcess(android.os.Process.myPid());
 	};
 
 	@Override
@@ -100,7 +100,7 @@ public class MainActivity extends FragmentActivity {
 		return false;
 	}
 
-	class NoisyGlobeFragmentAdapter extends FragmentPagerAdapter {
+	public class NoisyGlobeFragmentAdapter extends FragmentPagerAdapter {
 
 		public NoisyGlobeFragmentAdapter(FragmentManager fm) {
 			super(fm);

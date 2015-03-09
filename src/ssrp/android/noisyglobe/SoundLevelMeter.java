@@ -16,9 +16,11 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SoundLevelMeter implements SensorEventListener {
 
@@ -51,7 +53,7 @@ public class SoundLevelMeter implements SensorEventListener {
 	protected Boolean isPausedInCall = false;
 	protected PhoneStateListener phoneStateListener;
 	protected TelephonyManager telephonyManager;
-
+	
 	public SoundLevelMeter(Context context) {
 		this.context = context;
 		mHandler = new Handler();
@@ -77,9 +79,11 @@ public class SoundLevelMeter implements SensorEventListener {
 				case TelephonyManager.CALL_STATE_OFFHOOK:
 				case TelephonyManager.CALL_STATE_RINGING:
 					isPausedInCall = true;
+					showToastMessage("NoisyGlobe: Active call");
 					break;
 				case TelephonyManager.CALL_STATE_IDLE:
 					isPausedInCall = false;
+					showToastMessage("NoisyGlobe: Call state idle");
 					break;
 				}
 			}
@@ -92,11 +96,12 @@ public class SoundLevelMeter implements SensorEventListener {
 
 	}
 
-	protected boolean isLoudspeakerOn() {
+	public boolean isLoudspeakerOn() {
 		boolean value = false;
 		if (audioManager.isMusicActive()) {
 			value = true;
 			Log.i("music on", "music on");
+			showToastMessage("NoisyGlobe: Loudspeaker on");
 		}
 		return value;
 	}
@@ -107,8 +112,9 @@ public class SoundLevelMeter implements SensorEventListener {
 			@Override
 			public void run() {
 				boolean result = isLoudspeakerOn();
-				Log.i("debug", Boolean.toString(isPausedInCall));
-				if (gpsTracker.canGetLocation && !paused && !result && !isPausedInCall) {
+				Log.i("debug", Boolean.toString(gpsTracker.canGetLocation));
+				if (gpsTracker.canGetLocation && !paused && !result
+						&& !isPausedInCall) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
 					latitude = gpsTracker.getLatitude();
@@ -163,12 +169,12 @@ public class SoundLevelMeter implements SensorEventListener {
 			mRecorder.setOutputFile("/dev/null");
 			try {
 				mRecorder.prepare();
+				mRecorder.start();
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			mRecorder.start();
 		}
 	}
 
@@ -199,10 +205,13 @@ public class SoundLevelMeter implements SensorEventListener {
 	}
 
 	protected void storeSoundData(Double spl, Double longitude, Double latitude) {
-		if (spl > 0) {
+		long now = 0;
+
+        now = System.currentTimeMillis();
+		if (spl > 0 && now > 0) {
 			String param[] = { Double.toString(spl),
 					Double.toString(longitude), Double.toString(latitude),
-					Long.toString(System.currentTimeMillis() / 1000L) };
+					Long.toString(now / 1000L) };
 
 			dbHandler.insertTableDataRow(NoiseEntry.TABLE_NAME, param);
 		}
@@ -231,13 +240,25 @@ public class SoundLevelMeter implements SensorEventListener {
 		timer.cancel();
 	}
 
+	protected void showToastMessage(final String message) {
+		Handler handler = new Handler(Looper.getMainLooper());
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		Log.v("sensor event", Float.toString(event.values[0]));
 		if (event.values[0] > 0.0) {
 			startMeasuringSoundLevel();
+			showToastMessage("NoisyGlobe: Open space");
 		} else {
 			stopMeasuringSoundLevel();
+			showToastMessage("NoisyGlobed: Closed space");
 		}
 	}
 
@@ -246,4 +267,27 @@ public class SoundLevelMeter implements SensorEventListener {
 
 	}
 
+	public GPSTracker getGpsTracker() {
+		return gpsTracker;
+	}
+
+	public Boolean getPaused() {
+		return paused;
+	}
+
+	public Boolean getIsPausedInCall() {
+		return isPausedInCall;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
+	public void setSoundPressureLevel(Double soundPressureLevel) {
+		this.soundPressureLevel = soundPressureLevel;
+	}
 }
