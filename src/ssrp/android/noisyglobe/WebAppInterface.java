@@ -10,11 +10,16 @@ public class WebAppInterface {
 	public WebAppInterface(Context c) {
 		mContext = c;
 	}
-	
-	/** Show a toast from the web page 
-	 * @return */
+
+	/**
+	 * Show a toast from the web page
+	 * 
+	 * @return
+	 */
 	@JavascriptInterface
 	public String getLongitudeLatitudeSound() {
-		return Double.toString(MapViewFragment.slm.getLongitude()) +":"+Double.toString(MapViewFragment.slm.getLatitude())+":"+Double.toString(MapViewFragment.slm.getSoundPressureLevel());
+		return Double.toString(MapViewFragment.slm.getLongitude()) + ":"
+				+ Double.toString(MapViewFragment.slm.getLatitude()) + ":"
+				+ Double.toString(MapViewFragment.slm.getSoundPressureLevel());
 	}
 }

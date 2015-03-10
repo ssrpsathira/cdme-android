@@ -53,7 +53,9 @@ public class SoundLevelMeter implements SensorEventListener {
 	protected Boolean isPausedInCall = false;
 	protected PhoneStateListener phoneStateListener;
 	protected TelephonyManager telephonyManager;
-	
+
+	protected boolean callAnswered = false;
+
 	public SoundLevelMeter(Context context) {
 		this.context = context;
 		mHandler = new Handler();
@@ -73,15 +75,32 @@ public class SoundLevelMeter implements SensorEventListener {
 		telephonyManager = (TelephonyManager) context
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		phoneStateListener = new PhoneStateListener() {
+
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				switch (state) {
 				case TelephonyManager.CALL_STATE_OFFHOOK:
+					isPausedInCall = true;
+					callAnswered = true;
+					stopMediaRecorder();
+					showToastMessage("NoisyGlobe: Active call");
+					break;
 				case TelephonyManager.CALL_STATE_RINGING:
 					isPausedInCall = true;
+					stopMediaRecorder();
 					showToastMessage("NoisyGlobe: Active call");
 					break;
 				case TelephonyManager.CALL_STATE_IDLE:
+					if (callAnswered) {
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						startMediaRecorder();
+					}else{
+						startMediaRecorder();
+					}
 					isPausedInCall = false;
 					showToastMessage("NoisyGlobe: Call state idle");
 					break;
@@ -112,8 +131,9 @@ public class SoundLevelMeter implements SensorEventListener {
 			@Override
 			public void run() {
 				boolean result = isLoudspeakerOn();
-				Log.i("debug", Boolean.toString(gpsTracker.canGetLocation));
-				if (gpsTracker.canGetLocation && !paused && !result
+				Log.i("gps tracker",
+						Boolean.toString(gpsTracker.canMeasureSound));
+				if (gpsTracker.canMeasureSound && !paused && !result
 						&& !isPausedInCall) {
 					currentTime = System.currentTimeMillis() / 1000L;
 					longitude = gpsTracker.getLongitude();
@@ -207,7 +227,7 @@ public class SoundLevelMeter implements SensorEventListener {
 	protected void storeSoundData(Double spl, Double longitude, Double latitude) {
 		long now = 0;
 
-        now = System.currentTimeMillis();
+		now = System.currentTimeMillis();
 		if (spl > 0 && now > 0) {
 			String param[] = { Double.toString(spl),
 					Double.toString(longitude), Double.toString(latitude),
@@ -290,4 +310,5 @@ public class SoundLevelMeter implements SensorEventListener {
 	public void setSoundPressureLevel(Double soundPressureLevel) {
 		this.soundPressureLevel = soundPressureLevel;
 	}
+
 }

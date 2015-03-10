@@ -27,7 +27,7 @@ public class SettingsViewFragment extends Fragment implements
 			OPERATIONAL_MODE_APPLICATION, OPERATIONAL_MODE_SERVICE };
 	private static final String[] dataUploadModeChoises = {
 			DATA_UPLOAD_MODE_WIFI, DATA_UPLOAD_MODE_WIFI_IF_AVAILABLE };
-
+	
 	public SettingsViewFragment(Context applicationContext) {
 		this.context = applicationContext;
 		dbHandler = new DataBaseHandler(context);

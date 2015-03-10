@@ -21,6 +21,7 @@ public class NoisyGlobeService extends Service {
 		Toast.makeText(this, "NoisyGlobe service started", Toast.LENGTH_LONG).show();
 
 		slm = new SoundLevelMeter(this);
+		slm.startMediaRecorder();
 		slm.startMeasuringSoundLevel();
 		slm.measureSoundLevel();
 		

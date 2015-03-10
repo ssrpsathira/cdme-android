@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-public class MapViewFragment extends Fragment{
+public class MapViewFragment extends Fragment {
 	public static SoundLevelMeter slm;
 	protected ConnectionDetector cd;
 
@@ -26,7 +26,7 @@ public class MapViewFragment extends Fragment{
 			Bundle savedInstanceState) {
 		View view = null;
 		cd = new ConnectionDetector(appContext);
-		if(cd.isConnectingToInternet()){
+		if (cd.isConnectingToInternet()) {
 			view = inflater.inflate(R.layout.fragment_map, container, false);
 			WebView myWebView = (WebView) view.findViewById(R.id.webview);
 			myWebView.loadUrl("file:///android_asset/index.html");
@@ -34,51 +34,50 @@ public class MapViewFragment extends Fragment{
 			webSettings.setJavaScriptEnabled(true);
 			myWebView.addJavascriptInterface(new WebAppInterface(appContext),
 					"Android");
-		}else{
-			view = inflater.inflate(R.layout.fragment_no_connection, container, false);
+		} else {
+			view = inflater.inflate(R.layout.fragment_no_connection, container,
+					false);
 		}
 		return view;
 	}
-	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		slm = new SoundLevelMeter(appContext);
+		slm.gpsTracker.getLocation();
 		slm.measureSoundLevel();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		slm.startMediaRecorder();
 		slm.startMeasuringSoundLevel();
-		slm.measureSoundLevel();
-		
-		slm.gpsTracker.getLocation();
-	};
+	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		
+
 		slm.stopMeasuringSoundLevel();
 		slm.stopMediaRecorder();
-		
-		slm.gpsTracker.locationManager.removeGpsStatusListener(slm.gpsTracker);
-		slm.gpsTracker.locationManager.removeUpdates(slm.gpsTracker);
-		slm.gpsTracker.locationManager = null;
 	};
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		if(slm.phoneStateListener != null){
-			slm.telephonyManager.listen(slm.phoneStateListener, PhoneStateListener.LISTEN_NONE);
+		if (slm.phoneStateListener != null) {
+			slm.telephonyManager.listen(slm.phoneStateListener,
+					PhoneStateListener.LISTEN_NONE);
 		}
 	}
-	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

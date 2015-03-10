@@ -21,20 +21,24 @@ public class GPSTracker extends Service implements LocationListener, Listener {
 	// flag for GPS status
 	boolean isGPSEnabled = false;
 
-	public boolean canGetLocation = false;
-
 	Location location; // location
 	double latitude; // latitude
 	double longitude; // longitude
 
 	// The minimum distance to change Updates in meters
-	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 5;
+	private static final float MIN_DISTANCE_CHANGE = 10;
+	private static final float LOCATION_UPDATE_THRESHOLD = 30;
+	private static final float LOCATION_ACCURACY_THRESHOLD = 10;
 
 	// The minimum time between updates in milliseconds
 	private static final long MIN_TIME_BW_UPDATES = 0;
 
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
+
+	public boolean canMeasureSound;
+
+	private boolean canGetLocation;
 
 	public GPSTracker(Context context) {
 		mContext = context;
@@ -50,7 +54,7 @@ public class GPSTracker extends Service implements LocationListener, Listener {
 		});
 	}
 
-	public Location getLocation() {
+	public boolean getLocation() {
 		locationManager = (LocationManager) mContext
 				.getSystemService(LOCATION_SERVICE);
 
@@ -58,20 +62,19 @@ public class GPSTracker extends Service implements LocationListener, Listener {
 		isGPSEnabled = locationManager
 				.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-
 		if (!isGPSEnabled) {
 			showToastMessage("You need to enable GPS to monitor sound");
-			canGetLocation = false;
-			return null;
+			canMeasureSound = false;
+			return false;
 		}
 
 		locationManager.addGpsStatusListener(this);
 
 		// finally require updates at -at least- the desired rate
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+				MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE, this);
 
-		return location;
+		return true;
 	}
 
 	public double getLatitude() {
@@ -96,8 +99,13 @@ public class GPSTracker extends Service implements LocationListener, Listener {
 
 	@Override
 	public void onLocationChanged(Location loc) {
-		if (canGetLocation) {
-			location = loc;
+		if(canGetLocation){
+			if(loc.getAccuracy() < LOCATION_ACCURACY_THRESHOLD){
+				if(location.distanceTo(loc) > LOCATION_UPDATE_THRESHOLD){
+					location = loc;
+					showToastMessage("NoisyGlobe: Location changed");
+				}
+			}
 		}
 	}
 
@@ -139,6 +147,7 @@ public class GPSTracker extends Service implements LocationListener, Listener {
 
 			if (location != null) {
 				canGetLocation = true;
+				canMeasureSound = true;
 				showToastMessage("NoisyGlobe: Location stable");
 			}
 

@@ -97,7 +97,9 @@
 					x: time.getTime(),
 					y: yValue1
 				});
-
+				if(dataPoints1.length > 100){
+					dataPoints1.shift();
+				}
 
 			};
 
